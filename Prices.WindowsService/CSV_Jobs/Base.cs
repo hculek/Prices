@@ -1,6 +1,11 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using HtmlAgilityPack;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
+using Npgsql;
+using Prices.WindowsService.Database;
+using Prices.WindowsService.POCO;
+using System.Text;
 
 namespace Prices.WindowsService.CSV_Jobs
 {
@@ -10,12 +15,16 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly int _sleepMinutes;
         private readonly int _sleepMinutesFail;
         private readonly ILogger<T> _logger;
-        protected Base(ILogger<T> Logger, string JobName, int SleepMinutes, int SleepMinutesFail = 1440)
+        private readonly HtmlWeb _HtmlAgilityWeb;
+        private readonly IDbConnectionFactory _dbConnectionFactory;
+        protected Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, string JobName, int SleepMinutes, int SleepMinutesFail = 1440)
         {
             _jobName = JobName;
             _sleepMinutes = SleepMinutes * 60000;
             _sleepMinutesFail = SleepMinutesFail * 60000;
             _logger = Logger;
+            _HtmlAgilityWeb = new HtmlWeb();
+            _dbConnectionFactory = DbConnFactory;
         }
         public virtual async Task Work() 
         { }
@@ -51,6 +60,44 @@ namespace Prices.WindowsService.CSV_Jobs
         public override Task StopAsync(CancellationToken cancellationToken)
         {
             return base.StopAsync(cancellationToken);
+        }
+
+        public async Task<HtmlDocument> GetWebDocAsync(string url, Encoding? encoding = null)
+        {
+            _HtmlAgilityWeb.OverrideEncoding = encoding ?? Encoding.UTF8;
+            return _HtmlAgilityWeb.Load(url);
+        }
+
+        public async Task<List<RetailerBusinessUnitPOCO>> GetStoresAsync(int retailerID)
+        {
+            using (NpgsqlConnection conn = _dbConnectionFactory.CreateConnection())
+            {
+                List<RetailerBusinessUnitPOCO> result = new List<RetailerBusinessUnitPOCO>();
+
+                string query = @"SELECT retailer_id, unit_id, filename 
+                                    from crm.retailer_business_unit_data 
+                                    where is_active = true
+                                    and retailer_id = @retailerID";
+
+                await conn.OpenAsync();
+
+                NpgsqlCommand cmd = new NpgsqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@retailerID", retailerID);
+
+                var reader = await cmd.ExecuteReaderAsync();
+
+                if (await reader.ReadAsync())
+                {
+                    result.Add(new RetailerBusinessUnitPOCO
+                    {
+                        retailerID = reader.GetInt32(reader.GetOrdinal("retailer_id")),
+                        unitID = reader.GetInt32(reader.GetOrdinal("unit_id")),
+                        filename = reader.GetString(reader.GetOrdinal("filename"))
+                    });
+                }
+
+                return result;
+            }
         }
     }
 }
