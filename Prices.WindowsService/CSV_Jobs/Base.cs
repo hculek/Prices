@@ -5,6 +5,7 @@ using NLog;
 using Npgsql;
 using Prices.WindowsService.Database;
 using Prices.WindowsService.POCO;
+using System.Net;
 using System.Text;
 
 namespace Prices.WindowsService.CSV_Jobs
@@ -97,6 +98,15 @@ namespace Prices.WindowsService.CSV_Jobs
                 }
 
                 return result;
+            }
+        }
+
+        public async Task DownloadCSVAsync(string downloadUrl, int retailerId, int storeId, string saveLocation)
+        {
+            using (HttpClient hc = new HttpClient())
+            { 
+                byte[] csv = await hc.GetByteArrayAsync(downloadUrl);
+                await File.WriteAllBytesAsync(saveLocation+@$"\{retailerId}_{storeId}.csv", csv);
             }
         }
     }
