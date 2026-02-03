@@ -15,7 +15,6 @@ namespace Prices.WindowsService.CSV_Jobs
     public class KonzumJob : Base<KonzumJob>
     {
         private readonly ILogger<KonzumJob> _logger;
-
         private readonly string _basePageUrl = "https://www.konzum.hr/cjenici?page=";
         private readonly string _baseDownloadUrl = "https://www.konzum.hr";
 
@@ -26,13 +25,12 @@ namespace Prices.WindowsService.CSV_Jobs
 
         public override async Task Work()
         {
-            bool finished = false;
-            int page = 1;
-
             var stores = await GetStoresAsync(1);
 
             if (stores.Any()) 
             {
+                bool finished = false;
+                int page = 1;
                 List<DownloadDataPOCO> downloadsData = new List<DownloadDataPOCO>();
 
                 while (!finished)

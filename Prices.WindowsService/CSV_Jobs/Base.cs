@@ -71,34 +71,45 @@ namespace Prices.WindowsService.CSV_Jobs
 
         public async Task<List<RetailerBusinessUnitPOCO>> GetStoresAsync(int retailerID)
         {
-            using (NpgsqlConnection conn = _dbConnectionFactory.CreateConnection())
-            {
-                List<RetailerBusinessUnitPOCO> result = new List<RetailerBusinessUnitPOCO>();
+            List<RetailerBusinessUnitPOCO> result = new List<RetailerBusinessUnitPOCO>();
 
-                string query = @"SELECT retailer_id, unit_id, filename 
+            try
+            {
+                using (NpgsqlConnection conn = _dbConnectionFactory.CreateConnection())
+                {
+                    string query = @"SELECT retailer_id, unit_id, lookup, filename 
                                     from crm.retailer_business_unit_data 
                                     where is_active = true
                                     and retailer_id = @retailerID";
 
-                await conn.OpenAsync();
+                    await conn.OpenAsync();
 
-                NpgsqlCommand cmd = new NpgsqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@retailerID", retailerID);
-
-                var reader = await cmd.ExecuteReaderAsync();
-
-                if (await reader.ReadAsync())
-                {
-                    result.Add(new RetailerBusinessUnitPOCO
+                    using (NpgsqlCommand cmd = new NpgsqlCommand(query, conn))
                     {
-                        retailerID = reader.GetInt32(reader.GetOrdinal("retailer_id")),
-                        unitID = reader.GetInt32(reader.GetOrdinal("unit_id")),
-                        filename = reader.GetString(reader.GetOrdinal("filename"))
-                    });
-                }
+                        cmd.Parameters.AddWithValue("@retailerID", retailerID);
 
-                return result;
+                        using (NpgsqlDataReader reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                result.Add(new RetailerBusinessUnitPOCO
+                                {
+                                    retailerID = reader.GetInt32(reader.GetOrdinal("retailer_id")),
+                                    unitID = reader.GetInt32(reader.GetOrdinal("unit_id")),
+                                    lookup = reader.GetValue(reader.GetOrdinal("lookup")) as string,
+                                    filename = reader.GetValue(reader.GetOrdinal("filename")) as string
+                                });
+                            }
+                        }
+                    }
+                }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+           
+            return result;
         }
 
         public async Task DownloadCSVAsync(string downloadUrl, int retailerId, int storeId, string saveLocation)

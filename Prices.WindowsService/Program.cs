@@ -38,8 +38,8 @@ namespace Prices.WindowsService
                 services.AddWindowsService();
 
                 #region hosted services
-                //services.AddHostedService<Test>();
-                services.AddHostedService<KonzumJob>();
+                //services.AddHostedService<KonzumJob>();
+                services.AddHostedService<KTCJob>();
                 #endregion hosted services
 
                 services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
