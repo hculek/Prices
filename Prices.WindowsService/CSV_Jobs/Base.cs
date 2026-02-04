@@ -5,6 +5,7 @@ using NLog;
 using Npgsql;
 using Prices.WindowsService.Database;
 using Prices.WindowsService.POCO;
+using System.IO.Compression;
 using System.Net;
 using System.Text;
 
@@ -36,9 +37,9 @@ namespace Prices.WindowsService.CSV_Jobs
             {
                 try
                 {
-                    _logger.LogInformation($"CSV job {_jobName} started.");
+                    _logger.LogInformation($"{_jobName} started.");
                     await Work();
-                    _logger.LogInformation($"CSV job {_jobName} completed. Sleeping until {DateTime.Now.AddMinutes(_sleepMinutes)}.");
+                    _logger.LogInformation($"{_jobName} completed. Sleeping until {DateTime.Now.AddMinutes(_sleepMinutes)}.");
                     await Task.Delay(_sleepMinutes, stoppingToken);
                 }
                 catch (OperationCanceledException)
@@ -47,7 +48,7 @@ namespace Prices.WindowsService.CSV_Jobs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"CSV job {_jobName} failed.");
+                    _logger.LogError(ex, $"{_jobName} failed.");
                     await Task.Delay(_sleepMinutesFail, stoppingToken);
                 }
             }
@@ -69,6 +70,42 @@ namespace Prices.WindowsService.CSV_Jobs
             return _HtmlAgilityWeb.Load(url);
         }
 
+        public async Task DownloadCSVAsync(string downloadUrl, int retailerId, int storeId, string saveLocation)
+        {
+            using (HttpClient hc = new HttpClient())
+            {
+                byte[] csv = await hc.GetByteArrayAsync(downloadUrl);
+                await File.WriteAllBytesAsync(saveLocation + @$"\{retailerId}_{storeId}.csv", csv);
+            }
+        }
+
+        /// <summary>
+        /// using (ZipArchive zip = await DownloadZipAsync(url))
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public async Task<ZipArchive> DownloadZipAsync(string url) 
+        {
+            HttpClient hc = new HttpClient();
+
+            var stream = await hc.GetStreamAsync(url);
+
+            return new ZipArchive(stream, ZipArchiveMode.Read);
+        }
+
+        public async Task SaveCsvFromZip(ZipArchiveEntry zip, int retailerId, int storeId, string saveLocation) 
+        {
+            string savePath = Path.Combine(saveLocation, $"{retailerId}_{storeId}.csv");
+            
+            using (Stream zipStream = zip.Open())
+            {
+                using (FileStream fs = File.Create(savePath))
+                {
+                    await zipStream.CopyToAsync(fs);
+                }
+            }
+        }
+
         public async Task<List<RetailerBusinessUnitPOCO>> GetStoresAsync(int retailerID)
         {
             List<RetailerBusinessUnitPOCO> result = new List<RetailerBusinessUnitPOCO>();
@@ -77,10 +114,16 @@ namespace Prices.WindowsService.CSV_Jobs
             {
                 using (NpgsqlConnection conn = _dbConnectionFactory.CreateConnection())
                 {
-                    string query = @"SELECT retailer_id, unit_id, lookup, filename 
-                                    from crm.retailer_business_unit_data 
-                                    where is_active = true
-                                    and retailer_id = @retailerID";
+                    string query = @"SELECT 
+                                        u.retailer_id, 
+                                        u.unit_id, 
+                                        u.lookup, 
+                                        u.filename, 
+                                        r.csv_directory
+                                    from crm.retailer_business_unit_data u
+                                    left join crm.retailer_basic_data r on r.retailer_id = u.retailer_id
+                                    where u.is_active = true
+                                    and u.retailer_id = @retailerID";
 
                     await conn.OpenAsync();
 
@@ -97,7 +140,8 @@ namespace Prices.WindowsService.CSV_Jobs
                                     retailerID = reader.GetInt32(reader.GetOrdinal("retailer_id")),
                                     unitID = reader.GetInt32(reader.GetOrdinal("unit_id")),
                                     lookup = reader.GetValue(reader.GetOrdinal("lookup")) as string,
-                                    filename = reader.GetValue(reader.GetOrdinal("filename")) as string
+                                    filename = reader.GetValue(reader.GetOrdinal("filename")) as string,
+                                    csvDirectory = reader.GetString(reader.GetOrdinal("csv_directory"))
                                 });
                             }
                         }
@@ -110,15 +154,6 @@ namespace Prices.WindowsService.CSV_Jobs
             }
            
             return result;
-        }
-
-        public async Task DownloadCSVAsync(string downloadUrl, int retailerId, int storeId, string saveLocation)
-        {
-            using (HttpClient hc = new HttpClient())
-            { 
-                byte[] csv = await hc.GetByteArrayAsync(downloadUrl);
-                await File.WriteAllBytesAsync(saveLocation+@$"\{retailerId}_{storeId}.csv", csv);
-            }
         }
     }
 }

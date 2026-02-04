@@ -22,23 +22,28 @@ namespace Prices.WindowsService.CSV_Jobs
 
         public override async Task Work()
         {
-            var stores = await GetStoresAsync(2);
-
-            if (stores.Any())
+            try
             {
-                foreach (var store in stores)
+                var stores = await GetStoresAsync(2);
+
+                if (stores.Any())
                 {
-                    string _pageUrl = _basePageUrl + store.lookup;
+                    foreach (var store in stores)
+                    {
+                        string _pageUrl = _basePageUrl + store.lookup;
 
-                    HtmlDocument? doc = await GetWebDocAsync(_pageUrl);
+                        HtmlDocument? doc = await GetWebDocAsync(_pageUrl);
 
-                    var downloadHref = doc.DocumentNode.Descendants("li").LastOrDefault().FirstChild.Attributes["href"].Value;
+                        var downloadHref = doc.DocumentNode.Descendants("li").LastOrDefault().FirstChild.Attributes["href"].Value;
 
-                    //todo saveLocation url
-                    await DownloadCSVAsync(_baseDownloadUrl + downloadHref, store.retailerID, store.unitID, "K:\\Aplikacije\\Cjenici\\CSV_DUMP\\KTC");
+                        await DownloadCSVAsync(_baseDownloadUrl + downloadHref, store.retailerID, store.unitID, store.csvDirectory);
+                    }
                 }
             }
-
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
         }
     }
 }

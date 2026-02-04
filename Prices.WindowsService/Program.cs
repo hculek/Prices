@@ -39,7 +39,8 @@ namespace Prices.WindowsService
 
                 #region hosted services
                 //services.AddHostedService<KonzumJob>();
-                services.AddHostedService<KTCJob>();
+                //services.AddHostedService<KTCJob>();
+                services.AddHostedService<LidlJob>();
                 #endregion hosted services
 
                 services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
