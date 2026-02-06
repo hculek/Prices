@@ -1,21 +1,18 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Prices.WindowsService.Database;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Prices.WindowsService.Helpers;
 
 namespace Prices.WindowsService.CSV_Jobs
 {
     public class KTCJob : Base<KTCJob>
     {
+        private static readonly string jobName = "KTCJob";
         private readonly ILogger<KTCJob> _logger;
         private readonly string _basePageUrl = "https://www.ktc.hr/cjenici?poslovnica=";
         private readonly string _baseDownloadUrl = "https://www.ktc.hr";
 
-        public KTCJob(ILogger<KTCJob> Logger, IDbConnectionFactory DbConnFactory) : base(Logger, DbConnFactory, "KTCJob", 1440, 5)
+        public KTCJob(ILogger<KTCJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) : base(Logger, DbConnFactory, RetailersHelper, jobName, 1440, 5)
         {
             _logger = Logger;
         }
@@ -24,7 +21,9 @@ namespace Prices.WindowsService.CSV_Jobs
         {
             try
             {
-                var stores = await GetStoresAsync(2);
+                var retailerData = await GetRetailerBasicDataAsync(RetailersEnum.KTC);
+
+                var stores = await GetStoresAsync(retailerData.retailerId);
 
                 if (stores.Any())
                 {
@@ -36,7 +35,7 @@ namespace Prices.WindowsService.CSV_Jobs
 
                         var downloadHref = doc.DocumentNode.Descendants("li").LastOrDefault().FirstChild.Attributes["href"].Value;
 
-                        await DownloadCSVAsync(_baseDownloadUrl + downloadHref, store.retailerID, store.unitID, store.csvDirectory);
+                        await DownloadCSVAsync(_baseDownloadUrl + downloadHref, store.retailerID, store.unitID, retailerData.csvDirectory);
                     }
                 }
             }

@@ -1,18 +1,19 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Prices.WindowsService.Database;
+using Prices.WindowsService.Helpers;
 using Prices.WindowsService.POCO;
 
 namespace Prices.WindowsService.CSV_Jobs
 {
     public class KonzumJob : Base<KonzumJob>
     {
+        private static readonly string jobName = "KonzumJob";
         private readonly ILogger<KonzumJob> _logger;
         private readonly string _basePageUrl = "https://www.konzum.hr/cjenici?page=";
         private readonly string _baseDownloadUrl = "https://www.konzum.hr";
-        private static readonly string jobName = "KonzumJob";
 
-        public KonzumJob(ILogger<KonzumJob> Logger, IDbConnectionFactory DbConnFactory) : base(Logger, DbConnFactory, jobName, 1440, 5)
+        public KonzumJob(ILogger<KonzumJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) : base(Logger, DbConnFactory, RetailersHelper, jobName, 1440, 5)
         {
             _logger = Logger;
         }
@@ -21,7 +22,9 @@ namespace Prices.WindowsService.CSV_Jobs
         {
             try
             {
-                var stores = await GetStoresAsync(1);
+                var retailerData = await GetRetailerBasicDataAsync(RetailersEnum.KONZUM);
+
+                var stores = await GetStoresAsync(retailerData.retailerId);
 
                 if (stores.Any())
                 {
@@ -65,7 +68,7 @@ namespace Prices.WindowsService.CSV_Jobs
 
                         if (downloadData != null)
                         {
-                            await DownloadCSVAsync(_baseDownloadUrl + downloadData.hrefDownload, store.retailerID, store.unitID, store.csvDirectory);
+                            await DownloadCSVAsync(_baseDownloadUrl + downloadData.hrefDownload, store.retailerID, store.unitID, retailerData.csvDirectory);
                         }
                     }
                 }

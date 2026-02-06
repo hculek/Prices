@@ -13,6 +13,5 @@ namespace Prices.WindowsService.POCO
 
         public string? lookup { get; set; }
         public string? filename { get; set; }
-        public string csvDirectory { get; set; }
     }
 }

@@ -1,16 +1,18 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Prices.WindowsService.Database;
+using Prices.WindowsService.Helpers;
 using System.IO.Compression;
 
 namespace Prices.WindowsService.CSV_Jobs
 {
     public class LidlJob : Base<LidlJob>
     {
+        private static readonly string jobName = "LidlJob";
         private readonly ILogger<LidlJob> _logger;
         private readonly string _basePageUrl = "https://tvrtka.lidl.hr/cijene";
 
-        public LidlJob(ILogger<LidlJob> Logger, IDbConnectionFactory DbConnFactory) : base(Logger, DbConnFactory, "LidlJob", 1440, 5)
+        public LidlJob(ILogger<LidlJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) : base(Logger, DbConnFactory, RetailersHelper, jobName, 1440, 5)
         {
             _logger = Logger;
         }
@@ -19,7 +21,9 @@ namespace Prices.WindowsService.CSV_Jobs
         {
             try
             {
-                var stores = await GetStoresAsync(3); //todo id from enum
+                var retailerData = await GetRetailerBasicDataAsync(RetailersEnum.LIDL);
+
+                var stores = await GetStoresAsync(retailerData.retailerId);
 
                 if (stores.Any())
                 {
@@ -37,7 +41,7 @@ namespace Prices.WindowsService.CSV_Jobs
                             var csv = zip.Entries.FirstOrDefault(x => x.Name.StartsWith(store.filename, StringComparison.InvariantCultureIgnoreCase));
                             if (csv != null)
                             {
-                                await SaveCsvFromZip(csv, store.retailerID, store.unitID, store.csvDirectory);
+                                await SaveCsvFromZip(csv, store.retailerID, store.unitID, retailerData.csvDirectory);
                             }
                         }
                     }
@@ -47,7 +51,6 @@ namespace Prices.WindowsService.CSV_Jobs
             {
                 _logger.LogError(ex.Message);
             }
-            
         }
     }
 }

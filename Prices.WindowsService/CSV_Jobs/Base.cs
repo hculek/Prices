@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using NLog;
 using Npgsql;
 using Prices.WindowsService.Database;
+using Prices.WindowsService.Helpers;
 using Prices.WindowsService.POCO;
 using System.IO.Compression;
 using System.Net;
@@ -19,7 +20,8 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly ILogger<T> _logger;
         private readonly HtmlWeb _HtmlAgilityWeb;
         private readonly IDbConnectionFactory _dbConnectionFactory;
-        protected Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, string JobName, int SleepMinutes, int SleepMinutesFail = 1440)
+        private readonly RetailersHelper _retailersHelper;
+        protected Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, string JobName, int SleepMinutes, int SleepMinutesFail = 1440)
         {
             _jobName = JobName;
             _sleepMinutes = SleepMinutes * 60000;
@@ -27,6 +29,7 @@ namespace Prices.WindowsService.CSV_Jobs
             _logger = Logger;
             _HtmlAgilityWeb = new HtmlWeb();
             _dbConnectionFactory = DbConnFactory;
+            _retailersHelper = RetailersHelper;
         }
         public virtual async Task Work() 
         { }
@@ -106,6 +109,11 @@ namespace Prices.WindowsService.CSV_Jobs
             }
         }
 
+        public async Task<RetailerDataPOCO> GetRetailerBasicDataAsync(RetailersEnum retailer)
+        {
+            return await _retailersHelper.GetRetailerBasicData(retailer);
+        }
+
         public async Task<List<RetailerBusinessUnitPOCO>> GetStoresAsync(int retailerID)
         {
             List<RetailerBusinessUnitPOCO> result = new List<RetailerBusinessUnitPOCO>();
@@ -118,10 +126,8 @@ namespace Prices.WindowsService.CSV_Jobs
                                         u.retailer_id, 
                                         u.unit_id, 
                                         u.lookup, 
-                                        u.filename, 
-                                        r.csv_directory
+                                        u.filename
                                     from crm.retailer_business_unit_data u
-                                    left join crm.retailer_basic_data r on r.retailer_id = u.retailer_id
                                     where u.is_active = true
                                     and u.retailer_id = @retailerID";
 
@@ -140,8 +146,7 @@ namespace Prices.WindowsService.CSV_Jobs
                                     retailerID = reader.GetInt32(reader.GetOrdinal("retailer_id")),
                                     unitID = reader.GetInt32(reader.GetOrdinal("unit_id")),
                                     lookup = reader.GetValue(reader.GetOrdinal("lookup")) as string,
-                                    filename = reader.GetValue(reader.GetOrdinal("filename")) as string,
-                                    csvDirectory = reader.GetString(reader.GetOrdinal("csv_directory"))
+                                    filename = reader.GetValue(reader.GetOrdinal("filename")) as string
                                 });
                             }
                         }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using Prices.WindowsService.CSV_Jobs;
 using Prices.WindowsService.Database;
+using Prices.WindowsService.Helpers;
 
 namespace Prices.WindowsService
 {
@@ -44,6 +45,7 @@ namespace Prices.WindowsService
                 #endregion hosted services
 
                 services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
+                services.AddSingleton<RetailersHelper>();
             });
     }
 }
