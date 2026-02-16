@@ -22,6 +22,7 @@ namespace Prices.WindowsService.CSV_Jobs
 
         public override async Task Work()
         {
+
             try
             {
                 var retailerData = await GetRetailerBasicDataAsync(RetailersEnum.DM);
@@ -42,108 +43,6 @@ namespace Prices.WindowsService.CSV_Jobs
                             await csvFile.WriteAsync(csvText);
                         }
                     }
-
-
-
-
-                    //MemoryStream documentStream = await GetExcelMemoryStreamAsync();
-
-                    //using (var documentStream = await GetExcelMemoryStreamAsync())
-                    //{
-                    //    using (SpreadsheetDocument document = SpreadsheetDocument.Open(documentStream, true))
-                    //    {
-                    //       TODO: move openxml code here
-
-
-                    //    }
-                    //}
-
-
-
-                    //tryout localtest:
-                    //using (SpreadsheetDocument document = SpreadsheetDocument.Open("K:\\S Interneta\\test.xlsx", true))
-                    //{
-                    //    WorkbookPart workbookPart = document.WorkbookPart;
-
-                    //    Workbook workbook = workbookPart.Workbook;
-                    //    Sheet sheet = workbook.Descendants<Sheet>().Where(x => x.Name == "Važeći cjenik").FirstOrDefault();
-
-                    //    WorksheetPart worksheetPart = (WorksheetPart)workbookPart.GetPartById(sheet.Id);
-                    //    Worksheet worksheet = worksheetPart.Worksheet;
-
-                    //    // fix for cells using shared string table data
-                    //    SharedStringTablePart sharedStringPart = workbookPart.SharedStringTablePart;
-                    //    foreach (var cell in worksheet.Descendants<Cell>())
-                    //    {
-                    //        if (cell.DataType == "s")
-                    //        {
-                    //            int index = Int32.Parse(cell.CellValue.Text);
-                    //            var value = sharedStringPart.RootElement.Elements<SharedStringItem>().ElementAt(index);
-                    //            cell.RemoveAllChildren();
-                    //            cell.DataType = CellValues.InlineString;
-                    //            cell.Append(new InlineString(new Text(value.Text.Text)));
-                    //        }
-                    //    }
-
-                    //    SheetData sheetData = worksheet.GetFirstChild<SheetData>();
-
-                    //    IEnumerable<Row> rows = sheetData.Descendants<Row>();
-
-                    //    var validationCell = rows.ElementAt<Row>(1).Descendants<Cell>().ElementAt(0).InnerText.ToString().ToLower().Replace(" ", "");
-
-                    //    if (validationCell == "naziv+šifra")
-                    //    {
-                    //        StringBuilder sbCsv = new StringBuilder();
-                    //        sbCsv.AppendLine($"\"naziv\";\"šifra\";\"marka\";\"barkod\";\"kategorija proizvoda\";" +
-                    //            $"\"neto količina\";\"Jedinica mjere\";\"Cijena za jedinicu mjere\";\"dostupno samo online\";" +
-                    //            $"\"MPC\";\"MPC za vrijeme posebnog oblika prodaje (Rasprodaja proizvoda koji izlaze iz asortimana)\";" +
-                    //            $"\"Najniža cijena u posljednjih 30 dana prije rasprodaje\";\"sidrena cijena na 2.5.2025. ili na datum ulistanja\"");
-                    //        IEnumerable <Row> filteredRows = rows.Skip(2);
-
-
-                    //        foreach (Row row in filteredRows)
-                    //        {
-                    //            StringBuilder sbRow = new StringBuilder();
-
-                    //            foreach (Cell cell in row)
-                    //            {
-                    //                //todo 
-                    //                // cell data type and format
-
-                    //                switch (cell.DataType?.ToString())
-                    //                {
-                    //                    case "inlineStr":
-                    //                        sbRow.Append(String.Format("\"{0}\";", cell.InnerText.Trim()));
-                    //                        break;
-
-                    //                    case "n":
-                    //                        decimal csvDecimal;
-                    //                        Decimal.TryParse(cell.InnerText.ToString().Trim(), System.Globalization.CultureInfo.InvariantCulture, out csvDecimal);
-                    //                        sbRow.Append(String.Format("{0};", csvDecimal));
-                    //                        break;
-
-                    //                    default:
-                    //                        sbRow.Append(String.Format("{0};", cell.InnerText.Trim()));
-                    //                        break;
-                    //                }
-                    //            }
-
-                    //            sbCsv.AppendLine(sbRow.ToString().TrimEnd(';'));
-                    //        }
-
-
-                    //        using (var csvFile = File.CreateText(retailerData.csvDirectory + "\\" + retailerData.retailerId + ".csv"))
-                    //        {
-                    //            await csvFile.WriteAsync(sbCsv.ToString().TrimEnd(';'));
-                    //        }
-
-                    //    }
-                    //    else
-                    //    {
-                    //        _logger.LogInformation($"{jobName} Excel validation failed.");
-                    //    }
-
-                    //}
                 }
             }
             catch (Exception ex)

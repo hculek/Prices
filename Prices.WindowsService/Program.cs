@@ -39,9 +39,9 @@ namespace Prices.WindowsService
                 services.AddWindowsService();
 
                 #region hosted services
-                //services.AddHostedService<KonzumJob>();
-                //services.AddHostedService<KTCJob>();
-                //services.AddHostedService<LidlJob>();
+                services.AddHostedService<KonzumJob>();
+                services.AddHostedService<KTCJob>();
+                services.AddHostedService<LidlJob>();
                 services.AddHostedService<DMJob>();
                 #endregion hosted services
 
