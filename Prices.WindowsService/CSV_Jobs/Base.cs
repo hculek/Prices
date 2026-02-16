@@ -1,13 +1,11 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NLog;
 using Npgsql;
 using Prices.WindowsService.Database;
 using Prices.WindowsService.Helpers;
 using Prices.WindowsService.POCO;
 using System.IO.Compression;
-using System.Net;
 using System.Text;
 
 namespace Prices.WindowsService.CSV_Jobs
