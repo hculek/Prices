@@ -1,0 +1,15 @@
+- i. Instructions:
+
+
+- i.i. Database creation:
+1. use db_ddl.sql to create database
+2. use create_user.sql to create user for app
+
+
+
+- i.ii. Database ddl dump:
+1. run cmd as administrator
+2. run commands:
+cd K:\Aplikacije\PostgreSQL\17\bin
+pg_dump -h localhost -U hrvoje -d prices_db --schema-only > db_ddl.sql
+
