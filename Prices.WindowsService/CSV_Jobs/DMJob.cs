@@ -135,7 +135,7 @@ namespace Prices.WindowsService.CSV_Jobs
                         var value = sharedStringPart.RootElement.Elements<SharedStringItem>().ElementAt(index);
                         cell.RemoveAllChildren();
                         cell.DataType = CellValues.InlineString;
-                        cell.Append(new InlineString(new Text(value.Text.Text)));
+                        cell.Append(new InlineString(new Text(value.Text.Text.Replace("\"", ""))));
                     }
                 }
 
