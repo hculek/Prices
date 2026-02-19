@@ -150,8 +150,22 @@ WHERE a.barcode IS NOT NULL
 --compare data, insert events for changed data
 LOOP 
 	IF COALESCE(unit.checksum_new, '0') <> COALESCE(unit.checksum_old, '0') THEN
+		-- event 3 | new product
+		IF COALESCE(unit.checksum_old, '0') = '0'
+			THEN INSERT INTO data_presentation.prices_events 
+			(event_id, event_date, barcode, product_name, product_brand, old_price, new_price, retailer_id, unit_id)
+			VALUES
+			(3, now(), unit.barcode_new, unit.product_name_new, unit.product_brand_new, unit.retail_price_old, unit.retail_price_new, unit.retailer_id_new, unit.unit_id_new);
+			
+		-- event 4 | discontinued product
+		ELSIF COALESCE(unit.checksum_new, '0') = '0'
+			THEN INSERT INTO data_presentation.prices_events 
+			(event_id, event_date, barcode, product_name, product_brand, old_price, new_price, retailer_id, unit_id)
+			VALUES
+			(3, now(), unit.barcode_new, unit.product_name_new, unit.product_brand_new, unit.retail_price_old, unit.retail_price_new, unit.retailer_id_new, unit.unit_id_new);
+		
 		-- event 1 | price increase
-		IF COALESCE(unit.retail_price_new, MONEY '0') > COALESCE(unit.retail_price_old, MONEY '0')
+		ELSIF COALESCE(unit.retail_price_new, MONEY '0') > COALESCE(unit.retail_price_old, MONEY '0')
 			THEN INSERT INTO data_presentation.prices_events 
 			(event_id, event_date, barcode, product_name, product_brand, old_price, new_price, retailer_id, unit_id)
 			VALUES
@@ -164,19 +178,6 @@ LOOP
 			VALUES
 			(2, now(), unit.barcode_new, unit.product_name_new, unit.product_brand_new, unit.retail_price_old, unit.retail_price_new, unit.retailer_id_new, unit.unit_id_new);
 			
-		-- event 3 | new product
-		ELSIF COALESCE(unit.checksum_old, '0') = '0'
-			THEN INSERT INTO data_presentation.prices_events 
-			(event_id, event_date, barcode, product_name, product_brand, old_price, new_price, retailer_id, unit_id)
-			VALUES
-			(3, now(), unit.barcode_new, unit.product_name_new, unit.product_brand_new, unit.retail_price_old, unit.retail_price_new, unit.retailer_id_new, unit.unit_id_new);
-			
-		-- event 4 | discontinued product
-		ELSIF COALESCE(unit.checksum_new, '0') = '0'
-			THEN INSERT INTO data_presentation.prices_events 
-			(event_id, event_date, barcode, product_name, product_brand, old_price, new_price, retailer_id, unit_id)
-			VALUES
-			(3, now(), unit.barcode_new, unit.product_name_new, unit.product_brand_new, unit.retail_price_old, unit.retail_price_new, unit.retailer_id_new, unit.unit_id_new);
 		END IF;
 	END IF;
 END LOOP;
