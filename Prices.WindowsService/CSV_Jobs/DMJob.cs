@@ -62,7 +62,7 @@ namespace Prices.WindowsService.CSV_Jobs
                 }))
                 {
                     var context = await browser.NewContextAsync();
-                    var page = await browser.NewPageAsync();
+                    var page = await context.NewPageAsync();
                     string href = String.Empty;
 
                     await page.GotoAsync(_basePageUrl);

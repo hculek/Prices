@@ -19,7 +19,7 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly HtmlWeb _HtmlAgilityWeb;
         private readonly IDbConnectionFactory _dbConnectionFactory;
         private readonly RetailersHelper _retailersHelper;
-        protected Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, string JobName, int SleepMinutes, int SleepMinutesFail = 1440)
+        public Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, string JobName, int SleepMinutes, int SleepMinutesFail = 1440)
         {
             _jobName = JobName;
             _sleepMinutes = SleepMinutes * 60000;

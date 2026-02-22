@@ -30,7 +30,7 @@ namespace Prices.WindowsService.CSV_Jobs
                 {
                     bool finished = false;
                     int page = 1;
-                    List<DownloadDataPOCO> downloadsData = new List<DownloadDataPOCO>();
+                    List<DownloadsDataPOCO> downloadsData = new List<DownloadsDataPOCO>();
 
                     while (!finished)
                     {
@@ -52,7 +52,7 @@ namespace Prices.WindowsService.CSV_Jobs
                         foreach (var url in downloadUrls)
                         {
 
-                            downloadsData.Add(new DownloadDataPOCO
+                            downloadsData.Add(new DownloadsDataPOCO
                             {
                                 innerHtml = url.InnerHtml,
                                 hrefDownload = url.Attributes["href"].Value

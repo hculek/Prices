@@ -43,6 +43,7 @@ namespace Prices.WindowsService
                 services.AddHostedService<KTCJob>();
                 services.AddHostedService<LidlJob>();
                 services.AddHostedService<DMJob>();
+                services.AddHostedService<KauflandJob>();
                 #endregion hosted services
 
                 services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();

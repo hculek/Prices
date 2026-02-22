@@ -215,6 +215,7 @@ IF unit.retailer_name = 'KONZUM' THEN CALL data_presentation.csv_to_pricelist_ko
 ELSIF unit.retailer_name = 'KTC' THEN CALL data_presentation.csv_to_pricelist_ktc(unit.csv_directory, unit.retailer_id, unit.unit_id);
 ELSIF unit.retailer_name ='LIDL' THEN CALL data_presentation.csv_to_pricelist_lidl(unit.csv_directory, unit.retailer_id, unit.unit_id);
 ELSIF unit.retailer_name = 'DM' THEN CALL data_presentation.csv_to_pricelist_dm(unit.csv_directory, unit.retailer_id, unit.unit_id);
+ELSIF unit.retailer_name = 'KAUFLAND' THEN CALL data_presentation.csv_to_pricelist_kaufland(unit.csv_directory, unit.retailer_id, unit.unit_id);
 ELSE 
 	RAISE NOTICE 'No procedure for retailer: % with id: %', 
 	unit.retailer_name, 
@@ -288,6 +289,66 @@ $$;
 
 
 ALTER PROCEDURE data_presentation.csv_to_pricelist_dm(IN csv_directory text, IN retailer_id integer, IN unit_id integer) OWNER TO hrvoje;
+
+--
+-- Name: csv_to_pricelist_kaufland(text, integer, integer); Type: PROCEDURE; Schema: data_presentation; Owner: hrvoje
+--
+
+CREATE PROCEDURE data_presentation.csv_to_pricelist_kaufland(IN csv_directory text, IN retailer_id integer, IN unit_id integer)
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+	p_file_path TEXT;
+
+BEGIN
+	p_file_path := csv_directory || '\\' || retailer_id || '_' || unit_id || '.csv';
+	
+-- temp table for import only
+CREATE TEMP TABLE cjenik_kaufland(
+naziv_proizvoda TEXT,
+sifra_proizvoda TEXT,
+marka_proizvoda TEXT,
+neto_kolicina TEXT,
+jedinica_mjere TEXT,
+maloprodajna_cijena TEXT,
+akcijska_cijena TEXT,
+kol_jed_mj TEXT,
+jed_mj TEXT,
+cijena_za_jedinicu_mjere TEXT,
+mpc_akcija TEXT,
+najniza_cijena_30_dana TEXT,
+sidrena_cijena TEXT,
+barkod TEXT,
+kategorija_proizvoda TEXT
+);
+
+--copy from csv to temp table
+EXECUTE format(
+		'COPY cjenik_kaufland FROM %L WITH (FORMAT csv, HEADER true, DELIMITER %L, ENCODING %L, QUOTE %L)',
+		p_file_path, E'\t', 'UTF8', '"'
+);
+
+--from temp table to imp table
+INSERT INTO data_presentation.imp_pricelist 
+(retailer_id, unit_id, product_name, product_brand, product_sku,
+net_measure, retail_price, price_per_measure_unit,
+barcode, date_processed, checksum)
+SELECT 
+retailer_id, unit_id, UPPER(naziv_proizvoda), UPPER(marka_proizvoda), sifra_proizvoda,
+neto_kolicina, 
+maloprodajna_cijena::MONEY,
+cijena_za_jedinicu_mjere::MONEY,
+barkod::varchar(13),
+now(),
+md5(naziv_proizvoda|| neto_kolicina || maloprodajna_cijena || cijena_za_jedinicu_mjere)
+FROM cjenik_kaufland;
+
+DROP TABLE cjenik_kaufland;
+END;
+$$;
+
+
+ALTER PROCEDURE data_presentation.csv_to_pricelist_kaufland(IN csv_directory text, IN retailer_id integer, IN unit_id integer) OWNER TO hrvoje;
 
 --
 -- Name: csv_to_pricelist_konzum(text, integer, integer); Type: PROCEDURE; Schema: data_presentation; Owner: hrvoje
@@ -620,6 +681,34 @@ CREATE VIEW data_presentation.discontinued_products AS
 
 
 ALTER VIEW data_presentation.discontinued_products OWNER TO hrvoje;
+
+--
+-- Name: followed_decreased_test; Type: VIEW; Schema: data_presentation; Owner: hrvoje
+--
+
+CREATE VIEW data_presentation.followed_decreased_test AS
+ SELECT d.event_description,
+    e.event_date,
+    e.barcode,
+    e.product_name,
+    e.product_brand,
+    e.old_price,
+    e.new_price,
+    rb.retailer_name,
+    (((ru.street_name)::text || ' '::text) || (ru.street_number)::text) AS address,
+    ru.settlement_name,
+    ru.zip_code
+   FROM ((((data_presentation.prices_events e
+     RIGHT JOIN crm.events_data d ON ((d.event_id = e.event_id)))
+     LEFT JOIN crm.retailer_basic_data rb ON ((rb.retailer_id = e.retailer_id)))
+     LEFT JOIN crm.retailer_business_unit_data ru ON ((ru.unit_id = e.unit_id)))
+     RIGHT JOIN crm.app_follow_list fl ON ((fl.barcode = (e.barcode)::text)))
+  WHERE ((d.event_id = 2) AND (NOT (EXISTS ( SELECT 1
+           FROM data_presentation.prices_events i
+          WHERE ((i.event_id = 1) AND (i.event_date >= e.event_date) AND ((i.barcode)::text = (e.barcode)::text) AND (i.retailer_id = e.retailer_id) AND (i.unit_id = e.unit_id))))));
+
+
+ALTER VIEW data_presentation.followed_decreased_test OWNER TO hrvoje;
 
 --
 -- Name: imp_pricelist; Type: TABLE; Schema: data_presentation; Owner: hrvoje

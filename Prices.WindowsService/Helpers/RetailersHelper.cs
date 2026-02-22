@@ -28,6 +28,7 @@ namespace Prices.WindowsService.Helpers
         KTC,
         LIDL,
         DM,
+        KAUFLAND
     }
 
     public class RetailersHelper : IRetailersData
