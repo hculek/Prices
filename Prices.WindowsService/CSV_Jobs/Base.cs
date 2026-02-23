@@ -19,11 +19,11 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly HtmlWeb _HtmlAgilityWeb;
         private readonly IDbConnectionFactory _dbConnectionFactory;
         private readonly RetailersHelper _retailersHelper;
-        public Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, string JobName, int SleepMinutes, int SleepMinutesFail = 1440)
+        public Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, string JobName, int SleepMinutes, int? SleepMinutesFail = 1440)
         {
             _jobName = JobName;
-            _sleepMinutes = SleepMinutes * 60000;
-            _sleepMinutesFail = SleepMinutesFail * 60000;
+            _sleepMinutes = SleepMinutes;
+            _sleepMinutesFail = SleepMinutesFail.Value;
             _logger = Logger;
             _HtmlAgilityWeb = new HtmlWeb();
             _dbConnectionFactory = DbConnFactory;
@@ -41,7 +41,7 @@ namespace Prices.WindowsService.CSV_Jobs
                     _logger.LogInformation($"{_jobName} started.");
                     await Work();
                     _logger.LogInformation($"{_jobName} completed. Sleeping until {DateTime.Now.AddMinutes(_sleepMinutes)}.");
-                    await Task.Delay(_sleepMinutes, stoppingToken);
+                    await Task.Delay(TimeSpan.FromMinutes(_sleepMinutes), stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -50,7 +50,7 @@ namespace Prices.WindowsService.CSV_Jobs
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, $"{_jobName} failed.");
-                    await Task.Delay(_sleepMinutesFail, stoppingToken);
+                    await Task.Delay(TimeSpan.FromMinutes(_sleepMinutesFail), stoppingToken);
                 }
             }
         }
