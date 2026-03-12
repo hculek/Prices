@@ -651,7 +651,9 @@ CREATE TABLE data_presentation.prices_events (
     old_price money,
     new_price money,
     retailer_id integer,
-    unit_id integer
+    unit_id integer,
+    net_measure text,
+    price_per_measure_unit money
 );
 
 
@@ -690,10 +692,12 @@ CREATE VIEW data_presentation.followed_decreased_test AS
  SELECT d.event_description,
     e.event_date,
     e.barcode,
-    e.product_name,
     e.product_brand,
+    e.product_name,
+    e.net_measure,
     e.old_price,
     e.new_price,
+    e.price_per_measure_unit,
     rb.retailer_name,
     (((ru.street_name)::text || ' '::text) || (ru.street_number)::text) AS address,
     ru.settlement_name,
@@ -753,6 +757,65 @@ CREATE TABLE data_presentation.imp_pricelist_arh (
 ALTER TABLE data_presentation.imp_pricelist_arh OWNER TO hrvoje;
 
 --
+-- Name: minimum_prices; Type: VIEW; Schema: data_presentation; Owner: hrvoje
+--
+
+CREATE VIEW data_presentation.minimum_prices AS
+ WITH minimal_prices AS (
+         SELECT imp_pricelist.barcode,
+            min(imp_pricelist.retail_price) AS min_retail_price
+           FROM data_presentation.imp_pricelist
+          GROUP BY imp_pricelist.barcode
+        )
+ SELECT p.barcode,
+    p.product_brand,
+    p.product_name,
+    p.net_measure,
+    p.retail_price,
+    p.price_per_measure_unit,
+    p.date_processed,
+    bd.retailer_name,
+    ((((ud.street_name)::text || ' '::text) || (ud.street_number)::text) || ' '::text) AS address,
+    ud.settlement_name
+   FROM (((data_presentation.imp_pricelist p
+     RIGHT JOIN minimal_prices m ON ((((m.barcode)::text = (p.barcode)::text) AND (m.min_retail_price = p.retail_price))))
+     LEFT JOIN crm.retailer_business_unit_data ud ON ((ud.unit_id = p.unit_id)))
+     LEFT JOIN crm.retailer_basic_data bd ON ((bd.retailer_id = p.retailer_id)));
+
+
+ALTER VIEW data_presentation.minimum_prices OWNER TO hrvoje;
+
+--
+-- Name: minimum_prices_followed; Type: VIEW; Schema: data_presentation; Owner: hrvoje
+--
+
+CREATE VIEW data_presentation.minimum_prices_followed AS
+ WITH minimal_prices AS (
+         SELECT p_1.barcode,
+            min(p_1.retail_price) AS min_retail_price
+           FROM (data_presentation.imp_pricelist p_1
+             RIGHT JOIN crm.app_follow_list fl ON ((fl.barcode = (p_1.barcode)::text)))
+          GROUP BY p_1.barcode
+        )
+ SELECT p.barcode,
+    p.product_brand,
+    p.product_name,
+    p.net_measure,
+    p.retail_price,
+    p.price_per_measure_unit,
+    p.date_processed,
+    bd.retailer_name,
+    ((((ud.street_name)::text || ' '::text) || (ud.street_number)::text) || ' '::text) AS address,
+    ud.settlement_name
+   FROM (((data_presentation.imp_pricelist p
+     RIGHT JOIN minimal_prices m ON ((((m.barcode)::text = (p.barcode)::text) AND (m.min_retail_price = p.retail_price))))
+     LEFT JOIN crm.retailer_business_unit_data ud ON ((ud.unit_id = p.unit_id)))
+     LEFT JOIN crm.retailer_basic_data bd ON ((bd.retailer_id = p.retailer_id)));
+
+
+ALTER VIEW data_presentation.minimum_prices_followed OWNER TO hrvoje;
+
+--
 -- Name: new_products; Type: VIEW; Schema: data_presentation; Owner: hrvoje
 --
 
@@ -760,10 +823,12 @@ CREATE VIEW data_presentation.new_products AS
  SELECT d.event_description,
     e.event_date,
     e.barcode,
-    e.product_name,
     e.product_brand,
+    e.product_name,
+    e.net_measure,
     e.old_price,
     e.new_price,
+    e.price_per_measure_unit,
     rb.retailer_name,
     (((ru.street_name)::text || ' '::text) || (ru.street_number)::text) AS address,
     ru.settlement_name,
@@ -772,7 +837,7 @@ CREATE VIEW data_presentation.new_products AS
      RIGHT JOIN crm.events_data d ON ((d.event_id = e.event_id)))
      LEFT JOIN crm.retailer_basic_data rb ON ((rb.retailer_id = e.retailer_id)))
      LEFT JOIN crm.retailer_business_unit_data ru ON ((ru.unit_id = e.unit_id)))
-  WHERE (d.event_id = 3);
+  WHERE ((d.event_id = 3) AND (e.event_date >= (CURRENT_DATE - '30 days'::interval)));
 
 
 ALTER VIEW data_presentation.new_products OWNER TO hrvoje;
@@ -785,10 +850,12 @@ CREATE VIEW data_presentation.price_change AS
  SELECT d.event_description,
     e.event_date,
     e.barcode,
-    e.product_name,
     e.product_brand,
+    e.product_name,
+    e.net_measure,
     e.old_price,
     e.new_price,
+    e.price_per_measure_unit,
     rb.retailer_name,
     ((ru.street_name)::text || (ru.street_number)::text) AS address,
     ru.settlement_name,
@@ -809,10 +876,12 @@ CREATE VIEW data_presentation.price_decrease AS
  SELECT d.event_description,
     e.event_date,
     e.barcode,
-    e.product_name,
     e.product_brand,
+    e.product_name,
+    e.net_measure,
     e.old_price,
     e.new_price,
+    e.price_per_measure_unit,
     rb.retailer_name,
     (((ru.street_name)::text || ' '::text) || (ru.street_number)::text) AS address,
     ru.settlement_name,
@@ -834,10 +903,12 @@ CREATE VIEW data_presentation.price_increase AS
  SELECT d.event_description,
     e.event_date,
     e.barcode,
-    e.product_name,
     e.product_brand,
+    e.product_name,
+    e.net_measure,
     e.old_price,
     e.new_price,
+    e.price_per_measure_unit,
     rb.retailer_name,
     (((ru.street_name)::text || ' '::text) || (ru.street_number)::text) AS address,
     ru.settlement_name,
