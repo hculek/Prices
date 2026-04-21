@@ -36,6 +36,15 @@ CREATE SCHEMA crm;
 ALTER SCHEMA crm OWNER TO hrvoje;
 
 --
+-- Name: data_import; Type: SCHEMA; Schema: -; Owner: hrvoje
+--
+
+CREATE SCHEMA data_import;
+
+
+ALTER SCHEMA data_import OWNER TO hrvoje;
+
+--
 -- Name: data_presentation; Type: SCHEMA; Schema: -; Owner: hrvoje
 --
 
@@ -639,6 +648,19 @@ ALTER TABLE crm.retailer_business_unit_data ALTER COLUMN unit_id ADD GENERATED A
 
 
 --
+-- Name: import_logs; Type: TABLE; Schema: data_import; Owner: hrvoje
+--
+
+CREATE TABLE data_import.import_logs (
+    retailer_id integer NOT NULL,
+    unit_id integer NOT NULL,
+    last_update_date timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE data_import.import_logs OWNER TO hrvoje;
+
+--
 -- Name: prices_events; Type: TABLE; Schema: data_presentation; Owner: hrvoje
 --
 
@@ -977,6 +999,13 @@ GRANT ALL ON SCHEMA crm TO prices_app;
 
 
 --
+-- Name: SCHEMA data_import; Type: ACL; Schema: -; Owner: hrvoje
+--
+
+GRANT ALL ON SCHEMA data_import TO prices_app;
+
+
+--
 -- Name: TABLE logs_winservice; Type: ACL; Schema: admin; Owner: hrvoje
 --
 
@@ -1009,6 +1038,27 @@ GRANT ALL ON TABLE crm.retailer_business_unit_data TO prices_app;
 --
 
 GRANT ALL ON SEQUENCE crm.retailer_business_unit_data_unit_id_seq TO prices_app;
+
+
+--
+-- Name: TABLE import_logs; Type: ACL; Schema: data_import; Owner: hrvoje
+--
+
+GRANT ALL ON TABLE data_import.import_logs TO prices_app;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: data_import; Owner: hrvoje
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE hrvoje IN SCHEMA data_import GRANT ALL ON SEQUENCES TO prices_app;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: data_import; Owner: hrvoje
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE hrvoje IN SCHEMA data_import GRANT ALL ON TABLES TO prices_app;
 
 
 --

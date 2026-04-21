@@ -24,3 +24,18 @@ EXECUTE format('GRANT ALL PRIVILEGES ON DATABASE prices_db TO %I;', your_db_user
 END
 $$;
 --
+
+DO $$
+DECLARE
+    r RECORD;
+    your_db_username text := 'prices_app';  -- << change here
+	your_db_password text := '#prices_app'; -- << change here
+	your_schema_name text := 'data_import'; -- << change here
+BEGIN
+	EXECUTE format('GRANT ALL PRIVILEGES ON SCHEMA %I TO %I;', your_schema_name, your_db_username);
+	EXECUTE format('GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA %I TO %I;', your_schema_name, your_db_username);
+	EXECUTE format('GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA %I TO %I;', your_schema_name, your_db_username);
+	EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL PRIVILEGES ON TABLES TO %I;', your_schema_name, your_db_username);
+	EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL PRIVILEGES ON SEQUENCES TO %I;', your_schema_name, your_db_username);
+END
+$$;

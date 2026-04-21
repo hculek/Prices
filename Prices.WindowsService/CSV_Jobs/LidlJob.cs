@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Prices.WindowsService.Database;
 using Prices.WindowsService.Helpers;
+using Prices.WindowsService.POCO;
 using System.IO.Compression;
 
 namespace Prices.WindowsService.CSV_Jobs
@@ -21,29 +22,40 @@ namespace Prices.WindowsService.CSV_Jobs
         {
             try
             {
-                var retailerData = await GetRetailerBasicDataAsync(RetailersEnum.LIDL);
+                RetailerDataPOCO retailerData = await GetRetailerBasicDataAsync(RetailersEnum.LIDL);
 
-                var stores = await GetStoresAsync(retailerData.retailerId);
+                List<RetailerBusinessUnitPOCO> stores = await GetStoresAsync(retailerData.retailerId);
 
                 if (stores.Any())
                 {
                     HtmlDocument? doc = await GetWebDocAsync(_basePageUrl);
 
+                    string todaysDate = DateTime.Now.ToString("dd.MM.yyyy.");
+
                     var zipUrl = doc.DocumentNode.Descendants("p")
-                        .Where(x => x.InnerText.Contains("Cijene u trgovinama koje", StringComparison.InvariantCultureIgnoreCase))
-                        .LastOrDefault().Descendants("a").FirstOrDefault().Attributes["href"].Value;
+                            .Where(x => x.InnerText.Contains($"Cijene u trgovinama koje vrijede na dan {todaysDate}", StringComparison.InvariantCultureIgnoreCase))
+                            .FirstOrDefault().Descendants("a").FirstOrDefault().Attributes["href"].Value;
 
 
-                    using (ZipArchive zip = await DownloadZipAsync(zipUrl))
+                    if (!String.IsNullOrEmpty(zipUrl))
                     {
-                        foreach (var store in stores)
+                        List<ImportLog> importLogs = new List<ImportLog>();
+
+                        using (ZipArchive zip = await DownloadZipAsync(zipUrl))
                         {
-                            var csv = zip.Entries.FirstOrDefault(x => x.Name.StartsWith(store.filename, StringComparison.InvariantCultureIgnoreCase));
-                            if (csv != null)
+                            foreach (var store in stores)
                             {
-                                await SaveCsvFromZip(csv, store.retailerID, store.unitID, retailerData.csvDirectory);
+                                var csv = zip.Entries.FirstOrDefault(x => x.Name.StartsWith(store.filename, StringComparison.InvariantCultureIgnoreCase));
+                                if (csv != null)
+                                {
+                                    await SaveCsvFromZip(csv, store.retailerID, store.unitID, retailerData.csvDirectory);
+
+                                    importLogs.Add(new ImportLog { retailerID = store.retailerID, unitID = store.unitID });
+                                }
                             }
                         }
+
+                        await InsertImportLogs(importLogs);
                     }
                 }
             }

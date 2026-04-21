@@ -24,9 +24,11 @@ namespace Prices.WindowsService.CSV_Jobs
         {
             try
             {
-                var retailerData = await GetRetailerBasicDataAsync(RetailersEnum.KAUFLAND);
+                RetailerDataPOCO retailerData = await GetRetailerBasicDataAsync(RetailersEnum.KAUFLAND);
 
-                var stores = await GetStoresAsync(retailerData.retailerId);
+                List<RetailerBusinessUnitPOCO> stores = await GetStoresAsync(retailerData.retailerId);
+
+                List<ImportLog> importLogs = new List<ImportLog>();
 
                 if (stores.Any())
                 {
@@ -36,14 +38,17 @@ namespace Prices.WindowsService.CSV_Jobs
                     {
                         var storeDownloads = storesDownloads.Where(x => x.label.StartsWith(store.filename, StringComparison.InvariantCultureIgnoreCase)).TakeLast(_downloadDays);
 
-                        string downloadUrl = ExtractDownloadUrl(storeDownloads);
+                        string downloadUrl = ExtractTodaysDownloadUrl(storeDownloads);
 
                         if (!string.IsNullOrEmpty(downloadUrl))
                         {
                             await DownloadCSVAsync(_baseUrl + downloadUrl, store.retailerID, store.unitID, retailerData.csvDirectory);
+
+                            importLogs.Add(new ImportLog { retailerID = store.retailerID, unitID = store.unitID });
                         }
                     }
-                    
+
+                    await InsertImportLogs(importLogs);
                 }
 
             }
@@ -96,7 +101,7 @@ namespace Prices.WindowsService.CSV_Jobs
             return result;
         }
 
-        public string ExtractDownloadUrl(IEnumerable<Store> storeDownloads, double? day = 0)
+        public string ExtractTodaysDownloadUrl(IEnumerable<Store> storeDownloads, double? day = 0)
         {
             string downloadUrl = string.Empty;
             var currentDate = DateTime.Today.AddDays(-day.Value).ToString("ddMMyyyy");
@@ -120,7 +125,7 @@ namespace Prices.WindowsService.CSV_Jobs
                 if (day < _downloadDays)
                 {
                     day++;
-                    downloadUrl = ExtractDownloadUrl(storeDownloads, day);
+                    downloadUrl = ExtractTodaysDownloadUrl(storeDownloads, day);
                 }
                 
             }

@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿using DocumentFormat.OpenXml.Drawing.Diagrams;
+using HtmlAgilityPack;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Npgsql;
@@ -157,6 +158,47 @@ namespace Prices.WindowsService.CSV_Jobs
             }
            
             return result;
+        }
+
+
+        public async Task InsertImportLogs(List<ImportLog> importLogs) 
+        {
+            try
+            {
+                if (importLogs.Any())
+                {
+                    await using (NpgsqlConnection conn = _dbConnectionFactory.CreateConnection())
+                    {
+                        await conn.OpenAsync();
+
+                        await using (NpgsqlTransaction transaction = await conn.BeginTransactionAsync())
+                        {
+                            await using (NpgsqlCommand cmd = new NpgsqlCommand(
+                                @"INSERT INTO data_import.import_logs (retailer_id, unit_id, last_update_date)
+                              VALUES (@retailerId, @unitId, now())", conn, transaction))
+                            {
+                                cmd.Parameters.Add("@retailerId", NpgsqlTypes.NpgsqlDbType.Integer);
+                                cmd.Parameters.Add("@unitId", NpgsqlTypes.NpgsqlDbType.Integer);
+
+                                await cmd.PrepareAsync();
+
+                                foreach (var log in importLogs)
+                                {
+                                    cmd.Parameters["@retailerId"].Value = log.retailerID;
+                                    cmd.Parameters["@unitId"].Value = log.unitID;
+                                    await cmd.ExecuteNonQueryAsync();
+                                }
+
+                                await transaction.CommitAsync();
+                            }
+                        }
+                    }
+                }  
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
         }
     }
 }

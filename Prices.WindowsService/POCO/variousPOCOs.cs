@@ -4,6 +4,12 @@
     {
     }
 
+    public class ImportLog
+    {
+        public int retailerID { get; set; }
+        public int unitID { get; set; }
+    }
+
     public class DownloadsDataPOCO
     {
         public string innerHtml { get; set; }

@@ -22,15 +22,16 @@ namespace Prices.WindowsService.CSV_Jobs
         {
             try
             {
-                var retailerData = await GetRetailerBasicDataAsync(RetailersEnum.KONZUM);
+                RetailerDataPOCO retailerData = await GetRetailerBasicDataAsync(RetailersEnum.KONZUM);
 
-                var stores = await GetStoresAsync(retailerData.retailerId);
+                List<RetailerBusinessUnitPOCO> stores = await GetStoresAsync(retailerData.retailerId);
 
                 if (stores.Any())
                 {
                     bool finished = false;
                     int page = 1;
                     List<DownloadsDataPOCO> downloadsData = new List<DownloadsDataPOCO>();
+                    List<ImportLog> importLogs = new List<ImportLog>();
 
                     while (!finished)
                     {
@@ -38,18 +39,21 @@ namespace Prices.WindowsService.CSV_Jobs
 
                         HtmlDocument? doc = await GetWebDocAsync(_pageUrl);
 
-                        var downloadElement = doc.DocumentNode.Descendants("section")
+                        HtmlNode downloadElement = doc.DocumentNode.Descendants("section")
                         .Where(node => node.GetAttributeValue("class", "").Contains("py-1")).FirstOrDefault();
 
-                        var downloadUrls = downloadElement.Descendants("a")
+                        string csvDate = downloadElement.Descendants("h4").Where(node => node.GetAttributeValue("class", "").Contains("f-weight-bold")).FirstOrDefault().InnerHtml;
+                        string todaysDate = DateTime.Now.ToString("dd.MM.yyyy.");
+
+                        IEnumerable<HtmlNode> downloadUrls = downloadElement.Descendants("a")
                         .Where(node => node.GetAttributeValue("href", "").Contains("/cjenici/download"));
 
-                        if (!downloadUrls.Any())
+                        if (!downloadUrls.Any() || csvDate != todaysDate)
                         {
                             finished = true;
                         }
 
-                        foreach (var url in downloadUrls)
+                        foreach (HtmlNode url in downloadUrls)
                         {
 
                             downloadsData.Add(new DownloadsDataPOCO
@@ -57,27 +61,29 @@ namespace Prices.WindowsService.CSV_Jobs
                                 innerHtml = url.InnerHtml,
                                 hrefDownload = url.Attributes["href"].Value
                             });
-
                         }
                         page++;
                     }
 
-                    foreach (var store in stores)
+                    foreach (RetailerBusinessUnitPOCO store in stores)
                     {
                         var downloadData = downloadsData.Where(x => x.innerHtml.Contains(store.filename, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
 
                         if (downloadData != null)
                         {
                             await DownloadCSVAsync(_baseDownloadUrl + downloadData.hrefDownload, store.retailerID, store.unitID, retailerData.csvDirectory);
+
+                            importLogs.Add(new ImportLog { retailerID = store.retailerID, unitID = store.unitID});
                         }
                     }
+
+                    await InsertImportLogs(importLogs);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
             }
-            
         }     
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Prices.WindowsService.Database;
 using Prices.WindowsService.Helpers;
+using Prices.WindowsService.POCO;
 
 namespace Prices.WindowsService.CSV_Jobs
 {
@@ -25,6 +26,10 @@ namespace Prices.WindowsService.CSV_Jobs
 
                 var stores = await GetStoresAsync(retailerData.retailerId);
 
+                List<ImportLog> importLogs = new List<ImportLog>();
+
+                string todaysDate = DateTime.Now.ToString("yyyyMMdd");
+
                 if (stores.Any())
                 {
                     foreach (var store in stores)
@@ -33,10 +38,20 @@ namespace Prices.WindowsService.CSV_Jobs
 
                         HtmlDocument? doc = await GetWebDocAsync(_pageUrl);
 
-                        var downloadHref = doc.DocumentNode.Descendants("li").LastOrDefault().FirstChild.Attributes["href"].Value;
+                        var downloadHref = doc.DocumentNode.Descendants("li")
+                            .Select(li => li.Descendants("a").FirstOrDefault(a => a.GetAttributeValue("href", "").Contains(todaysDate)))
+                            .Where(a => a != null)
+                            .Select(a => a.GetAttributeValue("href", "")).FirstOrDefault();
 
-                        await DownloadCSVAsync(_baseDownloadUrl + downloadHref, store.retailerID, store.unitID, retailerData.csvDirectory);
+                        if (downloadHref != null) 
+                        {
+                            await DownloadCSVAsync(_baseDownloadUrl + downloadHref, store.retailerID, store.unitID, retailerData.csvDirectory);
+
+                            importLogs.Add(new ImportLog { retailerID = store.retailerID, unitID = store.unitID });
+                        }
                     }
+
+                    await InsertImportLogs(importLogs);
                 }
             }
             catch (Exception ex)

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using Prices.WindowsService.Database;
 using Prices.WindowsService.Helpers;
+using Prices.WindowsService.POCO;
 using System.Globalization;
 using System.Text;
 
@@ -25,7 +26,7 @@ namespace Prices.WindowsService.CSV_Jobs
 
             try
             {
-                var retailerData = await GetRetailerBasicDataAsync(RetailersEnum.DM);
+                RetailerDataPOCO retailerData = await GetRetailerBasicDataAsync(RetailersEnum.DM);
 
                 if (retailerData != null)
                 {
@@ -38,10 +39,16 @@ namespace Prices.WindowsService.CSV_Jobs
 
                     if (!string.IsNullOrEmpty(csvText))
                     {
+                        List<ImportLog> importLogs = new List<ImportLog>();
+
                         using (var csvFile = File.CreateText(retailerData.csvDirectory + "\\" + retailerData.retailerId + ".csv"))
                         {
                             await csvFile.WriteAsync(csvText);
+
+                            importLogs.Add(new ImportLog { retailerID = retailerData.retailerId });
                         }
+
+                        await InsertImportLogs(importLogs);
                     }
                 }
             }
@@ -71,11 +78,14 @@ namespace Prices.WindowsService.CSV_Jobs
                     var anchors = page.Locator("a");
                     int anchorCount = await anchors.CountAsync();
 
+                    string todaysDate = DateTime.Now.ToString("dd.M.yyyy");
+
                     for (int i = 0; i < anchorCount; i++)
                     {
                         var anchor = anchors.Nth(i);
                         var text = await anchor.InnerTextAsync();
-                        if (text.StartsWith("Važeći cjenik dm_", StringComparison.OrdinalIgnoreCase))
+                        if (text.StartsWith("Važeći cjenik dm_", StringComparison.OrdinalIgnoreCase)
+                            && text.Contains(todaysDate))
                         {
                             href = await anchor.First.GetAttributeAsync("href");
                             break;
