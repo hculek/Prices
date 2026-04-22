@@ -16,7 +16,8 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly ILogger<DMJob> _logger;
         private readonly string _basePageUrl = "https://www.dm.hr/novo/promocije/nove-oznake-cijena-i-vazeci-cjenik-u-dm-u-2906632";
 
-        public DMJob(ILogger<DMJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) : base(Logger, DbConnFactory, RetailersHelper, jobName, 1440, 5)
+        public DMJob(ILogger<DMJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) 
+            : base(Logger, DbConnFactory, RetailersHelper, jobName)
         {
             _logger = Logger;
         }
@@ -49,6 +50,7 @@ namespace Prices.WindowsService.CSV_Jobs
                         }
 
                         await InsertImportLogs(importLogs);
+                        SetSleepMinutes(1440);
                     }
                 }
             }

@@ -15,7 +15,8 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly string _baseUrl = "https://www.kaufland.hr";
         private readonly int _downloadDays = 30;
 
-        public KauflandJob(ILogger<KauflandJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) : base(Logger, DbConnFactory, RetailersHelper, jobName, 1440, 5)
+        public KauflandJob(ILogger<KauflandJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) 
+            : base(Logger, DbConnFactory, RetailersHelper, jobName)
         {
             _logger = Logger;
         }
@@ -48,7 +49,11 @@ namespace Prices.WindowsService.CSV_Jobs
                         }
                     }
 
-                    await InsertImportLogs(importLogs);
+                    if (importLogs.Any())
+                    {
+                        await InsertImportLogs(importLogs);
+                        SetSleepMinutes(1440);
+                    }
                 }
 
             }

@@ -1,12 +1,5 @@
 ﻿using Npgsql;
 using Prices.WindowsService.Database;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Prices.WindowsService.Helpers
 {
@@ -22,13 +15,17 @@ namespace Prices.WindowsService.Helpers
         public string csvDirectory { get; set; }
     }
 
+    /// <summary>
+    /// alphabetical enum for retailer names
+    /// </summary>
     public enum RetailersEnum 
-    { 
+    {
+        DM,
+        LIDL,
+        KAUFLAND,
         KONZUM,
         KTC,
-        LIDL,
-        DM,
-        KAUFLAND
+        PLODINE  
     }
 
     public class RetailersHelper : IRetailersData

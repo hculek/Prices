@@ -14,13 +14,14 @@ namespace Prices.WindowsService.CSV_Jobs
     public class Base<T> : BackgroundService
     {
         private readonly string _jobName;
-        private readonly int _sleepMinutes;
-        private readonly int _sleepMinutesFail;
+        private int _sleepMinutes;
+        private int _sleepMinutesFail;
         private readonly ILogger<T> _logger;
         private readonly HtmlWeb _HtmlAgilityWeb;
         private readonly IDbConnectionFactory _dbConnectionFactory;
         private readonly RetailersHelper _retailersHelper;
-        public Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, string JobName, int SleepMinutes, int? SleepMinutesFail = 1440)
+        public Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, 
+            string JobName, int SleepMinutes = 15, int? SleepMinutesFail = 1440)
         {
             _jobName = JobName;
             _sleepMinutes = SleepMinutes;
@@ -199,6 +200,16 @@ namespace Prices.WindowsService.CSV_Jobs
             {
                 _logger.LogError(ex.Message);
             }
+        }
+
+        public void SetSleepMinutes(int minutes)
+        {
+            _sleepMinutes = minutes;
+        }
+
+        public void SetSleepMinutesFail(int minutes)
+        {
+            _sleepMinutesFail = minutes;
         }
     }
 }
