@@ -13,8 +13,8 @@ namespace Prices.WindowsService.CSV_Jobs
         private static readonly string jobName = "PlodineJob";
         private readonly ILogger<PlodineJob> _logger;
         private readonly string _basePageUrl = "https://www.plodine.hr/info-o-cijenama";
-        public PlodineJob(ILogger<PlodineJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) 
-            : base(Logger, DbConnFactory, RetailersHelper, jobName)
+        public PlodineJob(ILogger<PlodineJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, HttpClient httpClient) 
+            : base(Logger, DbConnFactory, RetailersHelper, httpClient, jobName)
         {
             _logger = Logger;
         }

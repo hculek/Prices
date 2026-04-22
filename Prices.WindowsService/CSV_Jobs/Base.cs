@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Drawing.Diagrams;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Npgsql;
@@ -20,7 +19,8 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly HtmlWeb _HtmlAgilityWeb;
         private readonly IDbConnectionFactory _dbConnectionFactory;
         private readonly RetailersHelper _retailersHelper;
-        public Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, 
+        private readonly HttpClient _httpClient;
+        public Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, HttpClient httpClient,
             string JobName, int SleepMinutes = 15, int? SleepMinutesFail = 1440)
         {
             _jobName = JobName;
@@ -30,6 +30,7 @@ namespace Prices.WindowsService.CSV_Jobs
             _HtmlAgilityWeb = new HtmlWeb();
             _dbConnectionFactory = DbConnFactory;
             _retailersHelper = RetailersHelper;
+            _httpClient = httpClient;
         }
         public virtual async Task Work() 
         { }
@@ -67,19 +68,16 @@ namespace Prices.WindowsService.CSV_Jobs
             return base.StopAsync(cancellationToken);
         }
 
-        public async Task<HtmlDocument> GetWebDocAsync(string url, Encoding? encoding = null)
+        protected async Task<HtmlDocument> GetWebDocAsync(string url, Encoding? encoding = null)
         {
             _HtmlAgilityWeb.OverrideEncoding = encoding ?? Encoding.UTF8;
-            return _HtmlAgilityWeb.Load(url);
+            return await _HtmlAgilityWeb.LoadFromWebAsync(url);
         }
 
-        public async Task DownloadCSVAsync(string downloadUrl, int retailerId, int storeId, string saveLocation)
+        protected async Task DownloadCSVAsync(string downloadUrl, int retailerId, int storeId, string saveLocation)
         {
-            using (HttpClient hc = new HttpClient())
-            {
-                byte[] csv = await hc.GetByteArrayAsync(downloadUrl);
-                await File.WriteAllBytesAsync(saveLocation + @$"\{retailerId}_{storeId}.csv", csv);
-            }
+            byte[] csv = await _httpClient.GetByteArrayAsync(downloadUrl);
+            await File.WriteAllBytesAsync(saveLocation + @$"\{retailerId}_{storeId}.csv", csv);
         }
 
         /// <summary>
@@ -87,34 +85,32 @@ namespace Prices.WindowsService.CSV_Jobs
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
-        public async Task<ZipArchive> DownloadZipAsync(string url) 
+        protected async Task<ZipArchive> DownloadZipAsync(string url) 
         {
-            HttpClient hc = new HttpClient();
-
-            var stream = await hc.GetStreamAsync(url);
+            var stream = await _httpClient.GetStreamAsync(url);
 
             return new ZipArchive(stream, ZipArchiveMode.Read);
         }
 
-        public async Task SaveCsvFromZip(ZipArchiveEntry zip, int retailerId, int storeId, string saveLocation) 
+        protected async Task SaveCsvFromZip(ZipArchiveEntry zip, int retailerId, int storeId, string saveLocation) 
         {
             string savePath = Path.Combine(saveLocation, $"{retailerId}_{storeId}.csv");
             
-            using (Stream zipStream = zip.Open())
+            await using (Stream zipStream = zip.Open())
             {
-                using (FileStream fs = File.Create(savePath))
+                await using (FileStream fs = File.Create(savePath))
                 {
                     await zipStream.CopyToAsync(fs);
                 }
             }
         }
 
-        public async Task<RetailerDataPOCO> GetRetailerBasicDataAsync(RetailersEnum retailer)
+        protected async Task<RetailerDataPOCO> GetRetailerBasicDataAsync(RetailersEnum retailer)
         {
             return await _retailersHelper.GetRetailerBasicData(retailer);
         }
 
-        public async Task<List<RetailerBusinessUnitPOCO>> GetStoresAsync(int retailerID)
+        protected async Task<List<RetailerBusinessUnitPOCO>> GetStoresAsync(int retailerID)
         {
             List<RetailerBusinessUnitPOCO> result = new List<RetailerBusinessUnitPOCO>();
 
@@ -162,7 +158,7 @@ namespace Prices.WindowsService.CSV_Jobs
         }
 
 
-        public async Task InsertImportLogs(List<ImportLog> importLogs) 
+        protected async Task InsertImportLogs(List<ImportLog> importLogs) 
         {
             try
             {
@@ -202,12 +198,12 @@ namespace Prices.WindowsService.CSV_Jobs
             }
         }
 
-        public void SetSleepMinutes(int minutes)
+        protected void SetSleepMinutes(int minutes)
         {
             _sleepMinutes = minutes;
         }
 
-        public void SetSleepMinutesFail(int minutes)
+        protected void SetSleepMinutesFail(int minutes)
         {
             _sleepMinutesFail = minutes;
         }

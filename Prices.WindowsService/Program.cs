@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Http;
 using NLog.Extensions.Logging;
 using Prices.WindowsService.CSV_Jobs;
 using Prices.WindowsService.Database;
@@ -37,6 +38,7 @@ namespace Prices.WindowsService
                 Console.WriteLine($"Environment: {hostContext.HostingEnvironment.EnvironmentName}");
 
                 services.AddWindowsService();
+                services.AddHttpClient();
 
                 #region hosted services
                 services.AddHostedService<DMJob>();

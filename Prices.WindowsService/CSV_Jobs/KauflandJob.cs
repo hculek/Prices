@@ -15,8 +15,8 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly string _baseUrl = "https://www.kaufland.hr";
         private readonly int _downloadDays = 30;
 
-        public KauflandJob(ILogger<KauflandJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) 
-            : base(Logger, DbConnFactory, RetailersHelper, jobName)
+        public KauflandJob(ILogger<KauflandJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, HttpClient httpClient) 
+            : base(Logger, DbConnFactory, RetailersHelper, httpClient, jobName)
         {
             _logger = Logger;
         }

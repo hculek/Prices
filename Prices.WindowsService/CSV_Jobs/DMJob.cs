@@ -6,6 +6,7 @@ using Prices.WindowsService.Database;
 using Prices.WindowsService.Helpers;
 using Prices.WindowsService.POCO;
 using System.Globalization;
+using System.Net.Http;
 using System.Text;
 
 namespace Prices.WindowsService.CSV_Jobs
@@ -16,8 +17,8 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly ILogger<DMJob> _logger;
         private readonly string _basePageUrl = "https://www.dm.hr/novo/promocije/nove-oznake-cijena-i-vazeci-cjenik-u-dm-u-2906632";
 
-        public DMJob(ILogger<DMJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) 
-            : base(Logger, DbConnFactory, RetailersHelper, jobName)
+        public DMJob(ILogger<DMJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, HttpClient httpClient) 
+            : base(Logger, DbConnFactory, RetailersHelper, httpClient, jobName)
         {
             _logger = Logger;
         }

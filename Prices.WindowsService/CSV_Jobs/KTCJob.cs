@@ -13,8 +13,8 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly string _basePageUrl = "https://www.ktc.hr/cjenici?poslovnica=";
         private readonly string _baseDownloadUrl = "https://www.ktc.hr";
 
-        public KTCJob(ILogger<KTCJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) 
-            : base(Logger, DbConnFactory, RetailersHelper, jobName)
+        public KTCJob(ILogger<KTCJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, HttpClient httpClient) 
+            : base(Logger, DbConnFactory, RetailersHelper, httpClient, jobName)
         {
             _logger = Logger;
         }

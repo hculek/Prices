@@ -13,8 +13,8 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly string _basePageUrl = "https://www.konzum.hr/cjenici?page=";
         private readonly string _baseDownloadUrl = "https://www.konzum.hr";
 
-        public KonzumJob(ILogger<KonzumJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) 
-            : base(Logger, DbConnFactory, RetailersHelper, jobName)
+        public KonzumJob(ILogger<KonzumJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, HttpClient httpClient) 
+            : base(Logger, DbConnFactory, RetailersHelper, httpClient, jobName)
         {
             _logger = Logger;
         }
