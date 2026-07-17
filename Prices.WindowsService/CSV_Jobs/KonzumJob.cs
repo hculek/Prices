@@ -8,12 +8,12 @@ namespace Prices.WindowsService.CSV_Jobs
 {
     public class KonzumJob : Base<KonzumJob>
     {
-        private static readonly string jobName = "KonzumJob";
         private readonly ILogger<KonzumJob> _logger;
         private readonly string _basePageUrl = "https://www.konzum.hr/cjenici?page=";
         private readonly string _baseDownloadUrl = "https://www.konzum.hr";
 
-        public KonzumJob(ILogger<KonzumJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) : base(Logger, DbConnFactory, RetailersHelper, jobName, 1440, 5)
+        public KonzumJob(ILogger<KonzumJob> Logger, BaseJobDependencies Dependencies) 
+            : base(Logger, Dependencies)
         {
             _logger = Logger;
         }
@@ -77,7 +77,11 @@ namespace Prices.WindowsService.CSV_Jobs
                         }
                     }
 
-                    await InsertImportLogs(importLogs);
+                    if (importLogs.Any())
+                    {
+                        await InsertImportLogs(importLogs);
+                        SetSleepMinutes(1440);
+                    }
                 }
             }
             catch (Exception ex)

@@ -6,19 +6,21 @@ using Prices.WindowsService.Database;
 using Prices.WindowsService.Helpers;
 using Prices.WindowsService.POCO;
 using System.Globalization;
+using System.Net.Http;
 using System.Text;
 
 namespace Prices.WindowsService.CSV_Jobs
 {
     public class DMJob : Base<DMJob>
     {
-        private static readonly string jobName = "DMJob";
         private readonly ILogger<DMJob> _logger;
         private readonly string _basePageUrl = "https://www.dm.hr/novo/promocije/nove-oznake-cijena-i-vazeci-cjenik-u-dm-u-2906632";
 
-        public DMJob(ILogger<DMJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) : base(Logger, DbConnFactory, RetailersHelper, jobName, 1440, 5)
+        public DMJob(ILogger<DMJob> Logger, BaseJobDependencies Dependencies) 
+            : base(Logger, Dependencies)
         {
             _logger = Logger;
+
         }
 
         public override async Task Work()
@@ -49,6 +51,7 @@ namespace Prices.WindowsService.CSV_Jobs
                         }
 
                         await InsertImportLogs(importLogs);
+                        SetSleepMinutes(1440);
                     }
                 }
             }
@@ -94,7 +97,7 @@ namespace Prices.WindowsService.CSV_Jobs
 
                     if (String.IsNullOrEmpty(href))
                     {
-                        _logger.LogInformation($"{jobName} excel download link was not found.");
+                        _logger.LogInformation($"{_jobName} excel download link was not found.");
                         return null;
                     }
 
@@ -107,7 +110,7 @@ namespace Prices.WindowsService.CSV_Jobs
 
                     if (!response.Ok)
                     {
-                        _logger.LogInformation($"{jobName} excel download response was not OK.");
+                        _logger.LogInformation($"{_jobName} excel download response was not OK.");
                         return null;
                     }
 

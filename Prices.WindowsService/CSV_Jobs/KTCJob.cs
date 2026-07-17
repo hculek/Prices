@@ -8,12 +8,12 @@ namespace Prices.WindowsService.CSV_Jobs
 {
     public class KTCJob : Base<KTCJob>
     {
-        private static readonly string jobName = "KTCJob";
         private readonly ILogger<KTCJob> _logger;
         private readonly string _basePageUrl = "https://www.ktc.hr/cjenici?poslovnica=";
         private readonly string _baseDownloadUrl = "https://www.ktc.hr";
 
-        public KTCJob(ILogger<KTCJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) : base(Logger, DbConnFactory, RetailersHelper, jobName, 1440, 5)
+        public KTCJob(ILogger<KTCJob> Logger, BaseJobDependencies Dependencies) 
+            : base(Logger, Dependencies)
         {
             _logger = Logger;
         }
@@ -51,7 +51,11 @@ namespace Prices.WindowsService.CSV_Jobs
                         }
                     }
 
-                    await InsertImportLogs(importLogs);
+                    if (importLogs.Any())
+                    {
+                        await InsertImportLogs(importLogs);
+                        SetSleepMinutes(1440);
+                    }
                 }
             }
             catch (Exception ex)

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Http;
 using NLog.Extensions.Logging;
 using Prices.WindowsService.CSV_Jobs;
 using Prices.WindowsService.Database;
@@ -37,17 +38,21 @@ namespace Prices.WindowsService
                 Console.WriteLine($"Environment: {hostContext.HostingEnvironment.EnvironmentName}");
 
                 services.AddWindowsService();
+                services.AddHttpClient();
 
                 #region hosted services
+                services.AddHostedService<DMJob>();
+                services.AddHostedService<LidlJob>();
+                services.AddHostedService<KauflandJob>();
                 services.AddHostedService<KonzumJob>();
                 services.AddHostedService<KTCJob>();
-                services.AddHostedService<LidlJob>();
-                services.AddHostedService<DMJob>();
-                services.AddHostedService<KauflandJob>();
+                services.AddHostedService<PlodineJob>();
+
                 #endregion hosted services
 
                 services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
                 services.AddSingleton<RetailersHelper>();
+                services.AddSingleton<BaseJobDependencies>();
             });
     }
 }

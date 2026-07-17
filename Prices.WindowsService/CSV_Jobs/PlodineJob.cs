@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Prices.WindowsService.Database;
 using Prices.WindowsService.Helpers;
@@ -7,12 +8,11 @@ using System.IO.Compression;
 
 namespace Prices.WindowsService.CSV_Jobs
 {
-    public class LidlJob : Base<LidlJob>
+    public class PlodineJob : Base<PlodineJob>
     {
-        private readonly ILogger<LidlJob> _logger;
-        private readonly string _basePageUrl = "https://tvrtka.lidl.hr/cijene";
-
-        public LidlJob(ILogger<LidlJob> Logger, BaseJobDependencies Dependencies) 
+        private readonly ILogger<PlodineJob> _logger;
+        private readonly string _basePageUrl = "https://www.plodine.hr/info-o-cijenama";
+        public PlodineJob(ILogger<PlodineJob> Logger, BaseJobDependencies Dependencies) 
             : base(Logger, Dependencies)
         {
             _logger = Logger;
@@ -22,7 +22,7 @@ namespace Prices.WindowsService.CSV_Jobs
         {
             try
             {
-                RetailerDataPOCO retailerData = await GetRetailerBasicDataAsync(RetailersEnum.LIDL);
+                RetailerDataPOCO retailerData = await GetRetailerBasicDataAsync(RetailersEnum.PLODINE);
 
                 List<RetailerBusinessUnitPOCO> stores = await GetStoresAsync(retailerData.retailerId);
 
@@ -30,14 +30,12 @@ namespace Prices.WindowsService.CSV_Jobs
                 {
                     HtmlDocument? doc = await GetWebDocAsync(_basePageUrl);
 
-                    string todaysDate = DateTime.Now.ToString("dd.MM.yyyy.");
+                    string todaysDate = DateTime.Now.ToString("dd_MM_yyyy");
 
-                    var zipUrl = doc.DocumentNode.Descendants("p")
-                            .Where(x => x.InnerText.Contains($"Cijene u trgovinama koje vrijede na dan {todaysDate}", StringComparison.InvariantCultureIgnoreCase))
-                            .FirstOrDefault().Descendants("a").FirstOrDefault().Attributes["href"].Value;
+                    var zipUrl = doc.DocumentNode.Descendants("a")
+                        .Select(node => node.GetAttributeValue("href", "")).FirstOrDefault(node => node.Contains(todaysDate));
 
-
-                    if (!String.IsNullOrEmpty(zipUrl))
+                    if (!string.IsNullOrEmpty(zipUrl))
                     {
                         List<ImportLog> importLogs = new List<ImportLog>();
 
@@ -55,6 +53,7 @@ namespace Prices.WindowsService.CSV_Jobs
                             }
                         }
 
+
                         if (importLogs.Any())
                         {
                             await InsertImportLogs(importLogs);
@@ -67,6 +66,7 @@ namespace Prices.WindowsService.CSV_Jobs
             {
                 _logger.LogError(ex.Message);
             }
+
         }
     }
 }

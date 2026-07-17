@@ -9,13 +9,13 @@ namespace Prices.WindowsService.CSV_Jobs
 {
     public class KauflandJob : Base<KauflandJob>
     {
-        private static readonly string jobName= "KauflandJob";
         private readonly ILogger<KauflandJob> _logger;
         private readonly string _basePageUrl = "https://www.kaufland.hr/akcije-novosti/popis-mpc.html";
         private readonly string _baseUrl = "https://www.kaufland.hr";
         private readonly int _downloadDays = 30;
 
-        public KauflandJob(ILogger<KauflandJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper) : base(Logger, DbConnFactory, RetailersHelper, jobName, 1440, 5)
+        public KauflandJob(ILogger<KauflandJob> Logger, BaseJobDependencies Dependencies) 
+            : base(Logger, Dependencies)
         {
             _logger = Logger;
         }
@@ -48,7 +48,11 @@ namespace Prices.WindowsService.CSV_Jobs
                         }
                     }
 
-                    await InsertImportLogs(importLogs);
+                    if (importLogs.Any())
+                    {
+                        await InsertImportLogs(importLogs);
+                        SetSleepMinutes(1440);
+                    }
                 }
 
             }
