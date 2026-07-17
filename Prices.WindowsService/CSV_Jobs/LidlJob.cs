@@ -12,8 +12,8 @@ namespace Prices.WindowsService.CSV_Jobs
         private readonly ILogger<LidlJob> _logger;
         private readonly string _basePageUrl = "https://tvrtka.lidl.hr/cijene";
 
-        public LidlJob(ILogger<LidlJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, HttpClient httpClient) 
-            : base(Logger, DbConnFactory, RetailersHelper, httpClient)
+        public LidlJob(ILogger<LidlJob> Logger, BaseJobDependencies Dependencies) 
+            : base(Logger, Dependencies)
         {
             _logger = Logger;
         }
