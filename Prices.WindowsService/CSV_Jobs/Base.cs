@@ -12,25 +12,23 @@ namespace Prices.WindowsService.CSV_Jobs
 {
     public class Base<T> : BackgroundService
     {
-        private readonly string _jobName;
-        private int _sleepMinutes;
-        private int _sleepMinutesFail;
+        internal readonly string _jobName;
+        internal int _sleepMinutes = 15;
+        internal int _sleepMinutesFail = 1440;
+
         private readonly ILogger<T> _logger;
         private readonly HtmlWeb _HtmlAgilityWeb;
         private readonly IDbConnectionFactory _dbConnectionFactory;
         private readonly RetailersHelper _retailersHelper;
         private readonly HttpClient _httpClient;
-        public Base(ILogger<T> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, HttpClient httpClient,
-            string JobName, int SleepMinutes = 15, int? SleepMinutesFail = 1440)
+        public Base(ILogger<T> Logger, BaseJobDependencies dependencies)
         {
-            _jobName = JobName;
-            _sleepMinutes = SleepMinutes;
-            _sleepMinutesFail = SleepMinutesFail.Value;
+            _jobName = typeof(T).Name;
             _logger = Logger;
             _HtmlAgilityWeb = new HtmlWeb();
-            _dbConnectionFactory = DbConnFactory;
-            _retailersHelper = RetailersHelper;
-            _httpClient = httpClient;
+            _dbConnectionFactory = dependencies.DbConnectionFactory;
+            _retailersHelper = dependencies.RetailersHelper;
+            _httpClient = dependencies.HttpClient;
         }
         public virtual async Task Work() 
         { }

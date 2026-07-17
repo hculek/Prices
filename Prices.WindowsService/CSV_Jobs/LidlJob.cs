@@ -9,12 +9,11 @@ namespace Prices.WindowsService.CSV_Jobs
 {
     public class LidlJob : Base<LidlJob>
     {
-        private static readonly string jobName = "LidlJob";
         private readonly ILogger<LidlJob> _logger;
         private readonly string _basePageUrl = "https://tvrtka.lidl.hr/cijene";
 
         public LidlJob(ILogger<LidlJob> Logger, IDbConnectionFactory DbConnFactory, RetailersHelper RetailersHelper, HttpClient httpClient) 
-            : base(Logger, DbConnFactory, RetailersHelper, httpClient, jobName)
+            : base(Logger, DbConnFactory, RetailersHelper, httpClient)
         {
             _logger = Logger;
         }

@@ -52,6 +52,7 @@ namespace Prices.WindowsService
 
                 services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
                 services.AddSingleton<RetailersHelper>();
+                services.AddSingleton<BaseJobDependencies>();
             });
     }
 }
