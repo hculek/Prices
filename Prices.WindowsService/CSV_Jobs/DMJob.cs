@@ -81,7 +81,7 @@ namespace Prices.WindowsService.CSV_Jobs
                     var anchors = page.Locator("a");
                     int anchorCount = await anchors.CountAsync();
 
-                    string todaysDate = DateTime.Now.ToString("dd.M.yyyy");
+                    string todaysDate = DateTime.Now.ToString("d.M.yyyy");
 
                     for (int i = 0; i < anchorCount; i++)
                     {
