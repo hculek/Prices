@@ -1,3 +1,5 @@
+using Prices.Data;
+
 namespace Prices.Web
 {
     public class Program
@@ -8,6 +10,8 @@ namespace Prices.Web
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddDAL(builder.Configuration);
 
             var app = builder.Build();
 
