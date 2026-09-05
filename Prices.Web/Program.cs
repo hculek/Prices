@@ -31,7 +31,7 @@ namespace Prices.Web
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}")
+                pattern: "{controller=Authentication}/{action=Login}")
                 .WithStaticAssets();
 
             app.Run();

@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Usporedba cijena</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" asp-append-version="true" />
+</head>
+<body class="d-flex flex-column" style="min-height: 100vh;">
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-element border-bottom box-shadow">
+            <div class="container-fluid">
+                <a class="navbar-brand">Usporedba cijena</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="d-flex flex-grow-1">
+        <div class="d-flex flex-column align-items-center bg-element" style="width: 240px;">
+            <ul class="nav nav-pills flex-column w-100 p-2">
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-house-door me-2"></i> Početna
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Prices" ? "active" : "")" asp-controller="Prices" asp-action="Index">
+                        <i class="bi bi-tag me-2"></i> Cijene
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reports" ? "active" : "")" asp-controller="Reports" asp-action="Index">
+                        <i class="bi bi-eye me-2"></i> Lista praćenja
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "UserProfile" ? "active" : "")" asp-controller="Settings" asp-action="Index">
+                        <i class="bi bi-person me-2"></i> Moj profil
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="d-flex flex-column flex-grow-1 border-end">
+            <main role="main" class="flex-grow-1 d-flex flex-column">
+                <div class="card rounded-4 shadow-sm m-4 flex-grow-1">
+                    <div class="card-body d-flex flex-column">
+                        @RenderBody()
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

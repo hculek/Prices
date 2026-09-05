@@ -1,1 +1,30 @@
 ﻿@import "bootstrap/dist/css/bootstrap.min.css";
+
+body {
+    background-color: #F5FAFA;
+}
+
+.bg-element {
+    background-color: #FFFFFF;
+}
+
+
+/*sidebar stuff*/
+.sidebar-link {
+    color: inherit;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link:hover {
+    background-color: #ACD1E9;
+    color: #FFFFFF;
+    font-weight: 500;
+}
+
+.nav-pills .sidebar-link.active {
+    background-color: #6D929B;
+    color: #FFFFFF;
+    font-weight: 500;
+}
