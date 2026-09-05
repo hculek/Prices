@@ -1,0 +1,27 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<div class="row">
+
+</div>
+<div class="row">
+    <table id="pricesTable" class="table table-striped table-hover table-bordered align-middle" data-url="@Url.Action("GetPricesList", "Prices")">
+        <thead>
+            <tr>
+                <th>Barkod</th>
+                <th>Naziv</th>
+                <th>Cijena</th>
+                <th>Trgovac</th>
+                <th>Trgovina</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+@section scripts
+{
+    <script src="~/js/Views/Prices/PricesList.js"></script>
+}

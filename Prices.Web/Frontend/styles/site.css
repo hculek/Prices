@@ -1,7 +1,7 @@
 ﻿@import "bootstrap/dist/css/bootstrap.min.css";
 
 body {
-    background-color: #F5FAFA;
+    background-color: #999999;
 }
 
 .bg-element {
@@ -27,4 +27,38 @@ body {
     background-color: #6D929B;
     color: #FFFFFF;
     font-weight: 500;
+}
+
+.dt-layout-row
+{
+    margin: 2rem 0rem 2rem 0rem;
+}
+
+.dt-info {
+    margin: 2rem 0rem 2rem 0rem;
+}
+
+.dt-layout-cell {
+    margin: 1rem 0rem 1rem 0rem;
+}
+
+.dt-paging-button { /*TODO*/
+    box-sizing: border-box;
+    display: inline-block;
+    min-width: 1.5em;
+    padding: var(--dt-paging-button_padding);
+    margin-left: var(--dt-paging-button_margin-left);
+    text-align: center;
+    text-decoration: none !important;
+    cursor: pointer;
+    color: var(--dt-paging-button_color);
+    border: var(--dt-paging-button_border);
+    border-radius: var(--dt-paging-button_border-radius);
+    background: var(--dt-paging-button_background);
+    box-shadow: var(--dt-paging-button_box-shadow);
+    font-size: 100%;
+}
+
+dt.input { /*TODO*/
+    margin: 0rem 1rem 0rem 1rem;
 }

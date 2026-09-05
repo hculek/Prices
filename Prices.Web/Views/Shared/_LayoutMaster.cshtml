@@ -4,7 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Usporedba cijena</title>
-    <script type="importmap"></script>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" asp-append-version="true" />
 </head>
@@ -26,17 +25,17 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Prices" ? "active" : "")" asp-controller="Prices" asp-action="Index">
+                    <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "PricesList" ? "active" : "")" asp-controller="Prices" asp-action="PricesList">
                         <i class="bi bi-tag me-2"></i> Cijene
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reports" ? "active" : "")" asp-controller="Reports" asp-action="Index">
+                    <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Following" ? "active" : "")" asp-controller="Prices" asp-action="Following">
                         <i class="bi bi-eye me-2"></i> Lista praćenja
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "UserProfile" ? "active" : "")" asp-controller="Settings" asp-action="Index">
+                    <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "UserProfile" ? "active" : "")" asp-controller="UserProfile" asp-action="UserPanel">
                         <i class="bi bi-person me-2"></i> Moj profil
                     </a>
                 </li>
