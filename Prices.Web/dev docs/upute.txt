@@ -1,0 +1,11 @@
+1. kreirati folder root/Frontend
+
+2. npm init -y
+npm install --save bootstrap jquery @popperjs/core
+npm install --save-dev esbuild glob
+
+3. u Frontend/js kreirati site.js
+
+4. u Frontend kreirati build.mjs
+
+5. u package.json dodati buildove u <scripts> 

@@ -1,23 +1,24 @@
 {
   "name": "prices.web",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",
     "jquery": "^4.0.0"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
-    "typescript": "^7.0.2"
+    "glob": "^13.0.6"
   },
   "scripts": {
-    "build:js": "esbuild Frontend/scripts/site.ts --bundle --minify --outfile=wwwroot/js/site.js",
+    "build:js": "node Frontend/build.mjs",
     "build:css": "esbuild Frontend/styles/site.css --bundle --minify --outfile=wwwroot/css/site.css",
-    "build:views": "tsc -p Frontend/tsconfig.json",
-    "build": "npm run build:js && npm run build:css && npm run build:views"
-  }
+    "build": "npm run build:js && npm run build:css",
+    "watch:js": "node Frontend/build.js --watch"
+  },
+  "description": ""
 }
