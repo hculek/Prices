@@ -1,9 +1,5 @@
-﻿import $ from 'jquery';
-window.$ = window.jQuery = $;
-
+﻿import $ from './jquery';
 import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap;
+import './datatables.js';
 
-import DataTable from 'datatables.net-dt';
-import 'datatables.net-dt/css/dataTables.dataTables.min.css';
-window.DataTable = DataTable; 
