@@ -13,6 +13,11 @@ namespace Prices.Web
 
             builder.Services.AddDAL(builder.Configuration);
 
+            builder.Services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "RequestVerificationToken";
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

@@ -8,7 +8,10 @@
 
 </div>
 <div class="row">
-    <table id="pricesTable" class="table table-striped table-hover table-bordered align-middle" data-url="@Url.Action("GetPricesList", "Prices")">
+    <table id="pricesTable" class="table table-striped table-hover table-bordered align-middle" 
+    data-url="@Url.Action("GetPricesList", "Prices")"
+    data-follow-url="@Url.Action("FollowArticle", "Prices")"
+    data-unfollow-url="@Url.Action("UnfollowArticle", "Prices")">
     </table>
 </div>
 

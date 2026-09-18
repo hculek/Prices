@@ -30,10 +30,40 @@ namespace Prices.Web.Controllers
                 new { barcode = "3858885554444", product = "Šunka pileća 200g", price = 1.79, retailer = "Plodine", retailerunit = "Plodine Virovitica" },
                 new { barcode = "3858886665555", product = "Tjestenina 500g", price = 0.99, retailer = "Konzum", retailerunit = "Konzum Virovitica Centar" },
                 new { barcode = "3858887776666", product = "Riža 1kg", price = 1.49, retailer = "Spar", retailerunit = "Spar Virovitica" },
-                new { barcode = "3858888887777", product = "Ulje suncokretovo 1L", price = 2.19, retailer = "Lidl", retailerunit = "Lidl Virovitica" }
+                new { barcode = "3858888887777", product = "Ulje suncokretovo 1L", price = 2.19, retailer = "Lidl", retailerunit = "Lidl Virovitica" },
+                new { barcode = "3858888887777", product = "Ulje suncokretovo 1L", price = 2.66, retailer = "Konzum", retailerunit = "Konzum Virovitica Centar" },
+                new { barcode = "3858888887777", product = "Ulje suncokretovo 1L", price = 3.30, retailer = "Spar", retailerunit = "Spar Virovitica"  }
             };
 
             return Json(new { data });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FollowArticle(string barcode) 
+        {
+            if (string.IsNullOrEmpty(barcode))
+            {
+                return BadRequest();
+            }
+
+            //todo db 
+
+            return Json(new { isFollowing = true });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnfollowArticle(string barcode)
+        {
+            if (string.IsNullOrEmpty(barcode))
+            {
+                return BadRequest();
+            }
+
+            //todo db 
+
+            return Json(new { isFollowing = false });
         }
     }
 }
